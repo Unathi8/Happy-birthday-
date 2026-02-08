@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Birthday Message</title>
+<title>Hello Kitty Birthday</title>
+
 <style>
 body{
     margin:0;
-    background:black;
+    background:linear-gradient(#ffb6d9,#ff69b4);
     overflow:hidden;
+    font-family: "Comic Sans MS", cursive;
 }
 canvas{
     display:block;
@@ -27,7 +29,7 @@ canvas.height = window.innerHeight;
 
 let particles = [];
 
-/* MESSAGE LINES */
+/* MESSAGE */
 const lines = [
 "To my gorgeous, caring and loving girlfriend,",
 "You are the first person to make me feel love.",
@@ -45,7 +47,7 @@ function createParticles(){
 
     tctx.fillStyle = "white";
     tctx.textAlign = "center";
-    tctx.font = "bold 50px Arial";
+    tctx.font = "bold 52px Comic Sans MS";
 
     let startY = canvas.height/2 - (lines.length * 35);
 
@@ -73,18 +75,44 @@ function createParticles(){
 
 createParticles();
 
+/* floating hearts */
+let hearts = [];
+setInterval(()=>{
+    hearts.push({
+        x: Math.random()*canvas.width,
+        y: canvas.height,
+        size: 20 + Math.random()*20,
+        speed: 1 + Math.random()*2
+    });
+},400);
+
+function drawHeart(x,y,size){
+    ctx.fillStyle="#ff1493";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x-size/2, y-size/2, x-size, y+size/3, x, y+size);
+    ctx.bezierCurveTo(x+size, y+size/3, x+size/2, y-size/2, x, y);
+    ctx.fill();
+}
+
 function animate(){
-    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillStyle = "rgba(255,182,217,0.25)";
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
+    /* message particles */
     particles.forEach(p=>{
         p.x += (p.targetX - p.x)*0.05;
         p.y += (p.targetY - p.y)*0.05;
+        p.alpha -= 0.001;
 
-        p.alpha -= 0.0015;
-
-        ctx.fillStyle = "rgba(255,200,100,"+p.alpha+")";
+        ctx.fillStyle = "rgba(255,255,255,"+p.alpha+")";
         ctx.fillRect(p.x,p.y,3,3);
+    });
+
+    /* hearts animation */
+    hearts.forEach(h=>{
+        h.y -= h.speed;
+        drawHeart(h.x,h.y,h.size);
     });
 
     requestAnimationFrame(animate);
@@ -95,3 +123,4 @@ animate();
 
 </body>
 </html>
+
