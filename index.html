@@ -2,94 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Canvas Fireworks</title>
-
+<title>Birthday Fireworks</title>
 <style>
-    body {
-        margin: 0;
-        background: black;
-        overflow: hidden;
-    }
-
-    canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
+body{
+    margin:0;
+    background:black;
+    overflow:hidden;
+}
+canvas{
+    display:block;
+}
 </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
-const canvas = document.getElementById("c");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let fireworks = [];
+let particles = [];
 
-function Firework() {
-    this.x = Math.random() * canvas.width;
-    this.y = canvas.height;
-    this.targetY = Math.random() * canvas.height / 2;
-    this.color = "hsl(" + Math.random() * 360 + ",100%,50%)";
-    this.exploded = false;
-    this.particles = [];
-}
+/* draw hidden text and convert to particles */
+function createTextParticles(text){
+    const tempCanvas = document.createElement("canvas");
+    const tctx = tempCanvas.getContext("2d");
 
-Firework.prototype.update = function () {
-    if (!this.exploded) {
-        this.y -= 5;
-        if (this.y <= this.targetY) {
-            this.exploded = true;
-            for (let i = 0; i < 50; i++) {
-                this.particles.push({
-                    x: this.x,
-                    y: this.y,
-                    vx: (Math.random() - 0.5) * 6,
-                    vy: (Math.random() - 0.5) * 6,
-                    alpha: 1
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+
+    tctx.fillStyle = "white";
+    tctx.font = "bold 120px Arial";
+    tctx.textAlign = "center";
+    tctx.fillText(text, canvas.width/2, canvas.height/2);
+
+    const data = tctx.getImageData(0,0,tempCanvas.width,tempCanvas.height).data;
+
+    for(let y=0;y<tempCanvas.height;y+=6){
+        for(let x=0;x<tempCanvas.width;x+=6){
+            const index = (y * tempCanvas.width + x) * 4;
+            if(data[index+3] > 150){
+                particles.push({
+                    x: Math.random()*canvas.width,
+                    y: canvas.height,
+                    targetX: x,
+                    targetY: y,
+                    alpha:1
                 });
             }
         }
-    } else {
-        this.particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            p.alpha -= 0.02;
-        });
     }
-};
+}
 
-Firework.prototype.draw = function () {
-    if (!this.exploded) {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, 3, 10);
-    } else {
-        this.particles.forEach(p => {
-            ctx.fillStyle = "rgba(255,255,255," + p.alpha + ")";
-            ctx.fillRect(p.x, p.y, 2, 2);
-        });
-    }
-};
+createTextParticles("HAPPY BIRTHDAY");
 
-function animate() {
+function animate(){
     ctx.fillStyle = "rgba(0,0,0,0.2)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    if (Math.random() < 0.05) {
-        fireworks.push(new Firework());
-    }
+    particles.forEach(p=>{
+        p.x += (p.targetX - p.x)*0.05;
+        p.y += (p.targetY - p.y)*0.05;
 
-    fireworks.forEach((f, i) => {
-        f.update();
-        f.draw();
-        if (f.exploded && f.particles.every(p => p.alpha <= 0)) {
-            fireworks.splice(i, 1);
-        }
+        p.alpha -= 0.002;
+
+        ctx.fillStyle = "rgba(255,180,0,"+p.alpha+")";
+        ctx.fillRect(p.x,p.y,3,3);
     });
 
     requestAnimationFrame(animate);
@@ -100,3 +82,4 @@ animate();
 
 </body>
 </html>
+
